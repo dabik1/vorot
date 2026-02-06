@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RNPI — Комерційна презентація</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #3b82f6;
+            --accent: #06b6d4;
+            --accent-light: #22d3ee;
+            --dark: #0f172a;
+            --dark-soft: #1e293b;
+            --gray: #64748b;
+            --gray-light: #94a3b8;
+            --light: #f1f5f9;
+            --white: #ffffff;
+            --gradient-primary: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+            --gradient-dark: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --gradient-accent: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%);
+            --shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--dark);
+            color: var(--white);
+            overflow-x: hidden;
+        }
+
+        /* ======= SLIDE SYSTEM ======= */
+        .slide {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            padding: 60px 40px;
+        }
+
+        .slide-content {
+            max-width: 1200px;
+            width: 100%;
+            z-index: 2;
+            position: relative;
+        }
+
+        /* ======= NAVIGATION ======= */
+        .nav-dots {
+            position: fixed;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .nav-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-dot:hover,
+        .nav-dot.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            transform: scale(1.3);
+        }
+
+        .nav-dot[data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            right: 24px;
+            white-space: nowrap;
+            background: var(--dark-soft);
+            color: var(--white);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* ======= SLIDE 1: HERO ======= */
+        .slide-hero {
+            background: var(--gradient-dark);
+        }
+
+        .slide-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -30%;
+            width: 80%;
+            height: 150%;
+            background: radial-gradient(ellipse, rgba(37, 99, 235, 0.15) 0%, transparent 70%);
+            animation: pulse-bg 8s ease-in-out infinite;
+        }
+
+        .slide-hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -20%;
+            width: 60%;
+            height: 100%;
+            background: radial-gradient(ellipse, rgba(6, 182, 212, 0.1) 0%, transparent 70%);
+            animation: pulse-bg 10s ease-in-out infinite reverse;
+        }
+
+        @keyframes pulse-bg {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(37, 99, 235, 0.15);
+            border: 1px solid rgba(37, 99, 235, 0.3);
+            color: var(--primary-light);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 32px;
+            letter-spacing: 0.5px;
+        }
+
+        .hero-badge .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .hero-title {
+            font-size: clamp(48px, 7vw, 96px);
+            font-weight: 900;
+            line-height: 1.05;
+            margin-bottom: 24px;
+            letter-spacing: -2px;
+        }
+
+        .hero-title .gradient-text {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(18px, 2.5vw, 24px);
+            color: var(--gray-light);
+            font-weight: 300;
+            max-width: 700px;
+            line-height: 1.6;
+            margin-bottom: 48px;
+        }
+
+        .hero-cta-group {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 36px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: var(--white);
+            box-shadow: 0 8px 30px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(37, 99, 235, 0.5);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--white);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 48px;
+            margin-top: 80px;
+            padding-top: 48px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .stat-item {
+            text-align: left;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--gray);
+            margin-top: 4px;
+            font-weight: 400;
+        }
+
+        /* ======= SLIDE 2: PROBLEM ======= */
+        .slide-problem {
+            background: var(--white);
+            color: var(--dark);
+        }
+
+        .section-label {
+            display: inline-block;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: clamp(32px, 4vw, 52px);
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 24px;
+            letter-spacing: -1px;
+        }
+
+        .section-desc {
+            font-size: 18px;
+            color: var(--gray);
+            line-height: 1.7;
+            max-width: 700px;
+            margin-bottom: 60px;
+        }
+
+        .problem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .problem-card {
+            background: var(--light);
+            border-radius: 16px;
+            padding: 36px;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .problem-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-sm);
+            border-color: rgba(37, 99, 235, 0.1);
+        }
+
+        .problem-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 20px;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .problem-card h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--dark);
+        }
+
+        .problem-card p {
+            font-size: 15px;
+            color: var(--gray);
+            line-height: 1.6;
+        }
+
+        /* ======= SLIDE 3: SOLUTION ======= */
+        .slide-solution {
+            background: var(--gradient-dark);
+        }
+
+        .solution-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+        }
+
+        .solution-feature-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .solution-feature-list li {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .feature-check {
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            border-radius: 10px;
+            background: rgba(6, 182, 212, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            font-size: 16px;
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        .feature-text h4 {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .feature-text p {
+            font-size: 14px;
+            color: var(--gray-light);
+            line-height: 1.5;
+        }
+
+        .dashboard-mockup {
+            background: var(--dark-soft);
+            border-radius: 20px;
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: var(--shadow);
+        }
+
+        .mockup-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .mockup-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .mockup-dot.red { background: #ef4444; }
+        .mockup-dot.yellow { background: #eab308; }
+        .mockup-dot.green { background: #22c55e; }
+
+        .mockup-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .mockup-card {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .mockup-card.wide {
+            grid-column: 1 / -1;
+        }
+
+        .mockup-card-label {
+            font-size: 12px;
+            color: var(--gray);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .mockup-card-value {
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .mockup-card-value.up { color: #22c55e; }
+        .mockup-card-value.accent { color: var(--accent); }
+        .mockup-card-value.primary { color: var(--primary-light); }
+
+        .mockup-bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            height: 80px;
+            margin-top: 12px;
+        }
+
+        .bar {
+            flex: 1;
+            border-radius: 4px 4px 0 0;
+            min-height: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .bar:nth-child(1) { height: 40%; background: var(--primary); }
+        .bar:nth-child(2) { height: 65%; background: var(--primary-light); }
+        .bar:nth-child(3) { height: 50%; background: var(--accent); }
+        .bar:nth-child(4) { height: 80%; background: var(--primary); }
+        .bar:nth-child(5) { height: 55%; background: var(--primary-light); }
+        .bar:nth-child(6) { height: 90%; background: var(--accent); }
+        .bar:nth-child(7) { height: 70%; background: var(--primary); }
+        .bar:nth-child(8) { height: 100%; background: linear-gradient(to top, var(--primary), var(--accent)); }
+
+        /* ======= SLIDE 4: FEATURES ======= */
+        .slide-features {
+            background: var(--white);
+            color: var(--dark);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+        }
+
+        .feature-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 40px 32px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin-bottom: 24px;
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .feature-card h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--dark);
+        }
+
+        .feature-card p {
+            font-size: 15px;
+            color: var(--gray);
+            line-height: 1.6;
+        }
+
+        /* ======= SLIDE 5: HOW IT WORKS ======= */
+        .slide-how {
+            background: var(--light);
+            color: var(--dark);
+        }
+
+        .steps-container {
+            display: flex;
+            gap: 24px;
+            position: relative;
+        }
+
+        .steps-container::before {
+            content: '';
+            position: absolute;
+            top: 60px;
+            left: 80px;
+            right: 80px;
+            height: 3px;
+            background: var(--gradient-primary);
+            border-radius: 3px;
+        }
+
+        .step-card {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .step-number {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            color: var(--white);
+            font-size: 28px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 28px;
+            box-shadow: 0 8px 30px rgba(37, 99, 235, 0.3);
+        }
+
+        .step-card h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--dark);
+        }
+
+        .step-card p {
+            font-size: 14px;
+            color: var(--gray);
+            line-height: 1.6;
+            max-width: 240px;
+            margin: 0 auto;
+        }
+
+        /* ======= SLIDE 6: RESULTS ======= */
+        .slide-results {
+            background: var(--gradient-dark);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 28px;
+            margin-top: 60px;
+        }
+
+        .result-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 40px 28px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .result-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-4px);
+        }
+
+        .result-value {
+            font-size: 52px;
+            font-weight: 900;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .result-unit {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 12px;
+        }
+
+        .result-desc {
+            font-size: 14px;
+            color: var(--gray-light);
+            line-height: 1.5;
+        }
+
+        /* ======= SLIDE 7: PRICING ======= */
+        .slide-pricing {
+            background: var(--white);
+            color: var(--dark);
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+            align-items: stretch;
+        }
+
+        .pricing-card {
+            background: var(--white);
+            border: 2px solid rgba(0, 0, 0, 0.06);
+            border-radius: 24px;
+            padding: 44px 36px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .pricing-card.featured {
+            border-color: var(--primary);
+            transform: scale(1.05);
+            box-shadow: var(--shadow);
+        }
+
+        .pricing-card.featured .pricing-badge {
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gradient-primary);
+            color: white;
+            padding: 6px 24px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow);
+        }
+
+        .pricing-card.featured:hover {
+            transform: scale(1.05) translateY(-4px);
+        }
+
+        .pricing-name {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .pricing-desc {
+            font-size: 14px;
+            color: var(--gray);
+            margin-bottom: 32px;
+        }
+
+        .pricing-price {
+            font-size: 48px;
+            font-weight: 900;
+            color: var(--dark);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .pricing-price span {
+            font-size: 18px;
+            font-weight: 400;
+            color: var(--gray);
+        }
+
+        .pricing-period {
+            font-size: 14px;
+            color: var(--gray);
+            margin-bottom: 36px;
+        }
+
+        .pricing-features {
+            list-style: none;
+            text-align: left;
+            margin-bottom: 36px;
+        }
+
+        .pricing-features li {
+            padding: 10px 0;
+            font-size: 15px;
+            color: var(--dark-soft);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        .pricing-features li:last-child {
+            border-bottom: none;
+        }
+
+        .pricing-features .check {
+            color: #22c55e;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .btn-pricing {
+            width: 100%;
+            justify-content: center;
+            padding: 14px 28px;
+        }
+
+        /* ======= SLIDE 8: TESTIMONIALS ======= */
+        .slide-testimonials {
+            background: var(--light);
+            color: var(--dark);
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+        }
+
+        .testimonial-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 36px;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            transition: all 0.3s ease;
+        }
+
+        .testimonial-card:hover {
+            box-shadow: var(--shadow-sm);
+            transform: translateY(-2px);
+        }
+
+        .testimonial-stars {
+            color: #f59e0b;
+            font-size: 18px;
+            margin-bottom: 16px;
+            letter-spacing: 2px;
+        }
+
+        .testimonial-text {
+            font-size: 15px;
+            color: var(--gray);
+            line-height: 1.7;
+            margin-bottom: 24px;
+            font-style: italic;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .testimonial-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .testimonial-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .testimonial-role {
+            font-size: 13px;
+            color: var(--gray);
+        }
+
+        /* ======= SLIDE 9: CTA ======= */
+        .slide-cta {
+            background: var(--gradient-dark);
+            text-align: center;
+        }
+
+        .cta-title {
+            font-size: clamp(36px, 5vw, 60px);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            letter-spacing: -1px;
+        }
+
+        .cta-desc {
+            font-size: 20px;
+            color: var(--gray-light);
+            max-width: 600px;
+            margin: 0 auto 48px;
+            line-height: 1.6;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 60px;
+        }
+
+        .contact-row {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding-top: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--gray-light);
+            font-size: 15px;
+        }
+
+        .contact-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: rgba(37, 99, 235, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        /* ======= RESPONSIVE ======= */
+        @media (max-width: 1024px) {
+            .solution-layout {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+            .features-grid,
+            .testimonials-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .pricing-grid {
+                grid-template-columns: 1fr;
+                max-width: 400px;
+                margin: 0 auto;
+            }
+            .pricing-card.featured {
+                transform: none;
+            }
+            .pricing-card.featured:hover {
+                transform: translateY(-4px);
+            }
+            .results-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                padding: 40px 20px;
+            }
+            .features-grid,
+            .testimonials-grid {
+                grid-template-columns: 1fr;
+            }
+            .steps-container {
+                flex-direction: column;
+            }
+            .steps-container::before {
+                display: none;
+            }
+            .hero-stats {
+                flex-direction: column;
+                gap: 24px;
+            }
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+            .nav-dots {
+                display: none;
+            }
+        }
+
+        /* ======= ANIMATIONS ======= */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .fade-in-delay-1 { transition-delay: 0.1s; }
+        .fade-in-delay-2 { transition-delay: 0.2s; }
+        .fade-in-delay-3 { transition-delay: 0.3s; }
+        .fade-in-delay-4 { transition-delay: 0.4s; }
+        .fade-in-delay-5 { transition-delay: 0.5s; }
+        .fade-in-delay-6 { transition-delay: 0.6s; }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation Dots -->
+    <nav class="nav-dots" id="navDots">
+        <div class="nav-dot active" data-slide="0" data-tooltip="RNPI"></div>
+        <div class="nav-dot" data-slide="1" data-tooltip="Проблема"></div>
+        <div class="nav-dot" data-slide="2" data-tooltip="Рішення"></div>
+        <div class="nav-dot" data-slide="3" data-tooltip="Можливості"></div>
+        <div class="nav-dot" data-slide="4" data-tooltip="Як працює"></div>
+        <div class="nav-dot" data-slide="5" data-tooltip="Результати"></div>
+        <div class="nav-dot" data-slide="6" data-tooltip="Тарифи"></div>
+        <div class="nav-dot" data-slide="7" data-tooltip="Відгуки"></div>
+        <div class="nav-dot" data-slide="8" data-tooltip="Контакти"></div>
+    </nav>
+
+    <!-- ====== SLIDE 1: HERO ====== -->
+    <section class="slide slide-hero" id="slide-0">
+        <div class="slide-content">
+            <div class="hero-badge fade-in">
+                <span class="dot"></span>
+                Платформа нового покоління
+            </div>
+            <h1 class="hero-title fade-in fade-in-delay-1">
+                <span class="gradient-text">RNPI</span><br>
+                Розумне управління<br>бізнес-процесами
+            </h1>
+            <p class="hero-subtitle fade-in fade-in-delay-2">
+                Єдина платформа для автоматизації, аналітики та масштабування вашого бізнесу. Прийняття рішень на основі даних у реальному часі.
+            </p>
+            <div class="hero-cta-group fade-in fade-in-delay-3">
+                <a href="#slide-6" class="btn btn-primary">
+                    Почати безкоштовно
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+                <a href="#slide-2" class="btn btn-outline">
+                    Дізнатись більше
+                </a>
+            </div>
+            <div class="hero-stats fade-in fade-in-delay-4">
+                <div class="stat-item">
+                    <div class="stat-number">500+</div>
+                    <div class="stat-label">Активних клієнтів</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">99.9%</div>
+                    <div class="stat-label">Uptime платформи</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">3.2x</div>
+                    <div class="stat-label">Зростання продуктивності</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Технічна підтримка</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====== SLIDE 2: PROBLEM ====== -->
+    <section class="slide slide-problem" id="slide-1">
+        <div class="slide-content">
+            <span class="section-label fade-in">Виклики сучасного бізнесу</span>
+            <h2 class="section-title fade-in fade-in-delay-1">
+                З якими проблемами<br>стикається ваш бізнес?
+            </h2>
+            <p class="section-desc fade-in fade-in-delay-2">
+                Без належної автоматизації компанії втрачають до 40% потенційного прибутку через неефективні процеси та відсутність аналітики.
+            </p>
+            <div class="problem-grid">
+                <div class="problem-card fade-in fade-in-delay-1">
+                    <div class="problem-icon">&#9888;</div>
+                    <h3>Розрізнені дані</h3>
+                    <p>Інформація розкидана між Excel-таблицями, CRM, месенджерами та електронною поштою. Немає єдиного джерела правди.</p>
+                </div>
+                <div class="problem-card fade-in fade-in-delay-2">
+                    <div class="problem-icon">&#9201;</div>
+                    <h3>Повільні рішення</h3>
+                    <p>Відсутність аналітики в реальному часі призводить до затримок у прийнятті критичних бізнес-рішень та втрати конкурентних переваг.</p>
+                </div>
+                <div class="problem-card fade-in fade-in-delay-3">
+                    <div class="problem-icon">&#128200;</div>
+                    <h3>Відсутність масштабування</h3>
+                    <p>Ручні процеси не дозволяють масштабуватися. Кожний новий клієнт або проєкт створює непропорційне навантаження на команду.</p>
+                </div>
+                <div class="problem-card fade-in fade-in-delay-4">
+                    <div class="problem-icon">&#128176;</div>
+                    <h3>Втрати прибутку</h3>
+                    <p>Неоптимізована воронка продажів, невчасне реагування на запити клієнтів та відсутність автоматизації follow-up процесів.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====== SLIDE 3: SOLUTION ====== -->
+    <section class="slide slide-solution" id="slide-2">
+        <div class="slide-content">
+            <div class="solution-layout">
+                <div>
+                    <span class="section-label fade-in" style="color: var(--accent);">Наше рішення</span>
+                    <h2 class="section-title fade-in fade-in-delay-1" style="color: var(--white);">
+                        RNPI об'єднує все в одному місці
+                    </h2>
+                    <p class="section-desc fade-in fade-in-delay-2" style="color: var(--gray-light);">
+                        Інтелектуальна платформа, яка автоматизує бізнес-процеси, надає глибоку аналітику та допомагає приймати рішення на основі даних.
+                    </p>
+                    <ul class="solution-feature-list">
+                        <li class="fade-in fade-in-delay-2">
+                            <div class="feature-check">&#10003;</div>
+                            <div class="feature-text">
+                                <h4>Єдина панель управління</h4>
+                                <p>Всі метрики бізнесу на одному екрані з оновленням у реальному часі</p>
+                            </div>
+                        </li>
+                        <li class="fade-in fade-in-delay-3">
+                            <div class="feature-check">&#10003;</div>
+                            <div class="feature-text">
+                                <h4>AI-аналітика</h4>
+                                <p>Прогнозування трендів та автоматичні рекомендації на базі штучного інтелекту</p>
+                            </div>
+                        </li>
+                        <li class="fade-in fade-in-delay-4">
+                            <div class="feature-check">&#10003;</div>
+                            <div class="feature-text">
+                                <h4>Автоматизація воронки</h4>
+                                <p>Від першого контакту до закриття угоди — кожен етап під контролем</p>
+                            </div>
+                        </li>
+                        <li class="fade-in fade-in-delay-5">
+                            <div class="feature-check">&#10003;</div>
+                            <div class="feature-text">
+                                <h4>Інтеграції</h4>
+                                <p>Підключайте CRM, ERP, маркетплейси, платіжні системи та месенджери</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="dashboard-mockup fade-in fade-in-delay-3">
+                    <div class="mockup-header">
+                        <div class="mockup-dot red"></div>
+                        <div class="mockup-dot yellow"></div>
+                        <div class="mockup-dot green"></div>
+                    </div>
+                    <div class="mockup-body">
+                        <div class="mockup-card">
+                            <div class="mockup-card-label">Дохід</div>
+                            <div class="mockup-card-value up">$128,400</div>
+                        </div>
+                        <div class="mockup-card">
+                            <div class="mockup-card-label">Конверсія</div>
+                            <div class="mockup-card-value accent">34.2%</div>
+                        </div>
+                        <div class="mockup-card">
+                            <div class="mockup-card-label">Нові ліди</div>
+                            <div class="mockup-card-value primary">1,847</div>
+                        </div>
+                        <div class="mockup-card">
+                            <div class="mockup-card-label">NPS Score</div>
+                            <div class="mockup-card-value up">72</div>
+                        </div>
+                        <div class="mockup-card wide">
+                            <div class="mockup-card-label">Динаміка продажів</div>
+                            <div class="mockup-bar-chart">
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====== SLIDE 4: FEATURES ====== -->
+    <section class="slide slide-features" id="slide-3">
+        <div class="slide-content">
+            <div style="text-align: center; margin-bottom: 60px;">
+                <span class="section-label fade-in">Можливості платформи</span>
+                <h2 class="section-title fade-in fade-in-delay-1">Все, що потрібно для зростання</h2>
+                <p class="section-desc fade-in fade-in-delay-2" style="margin: 0 auto;">
+                    Потужний набір інструментів для кожного аспекту вашого бізнесу
+                </p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card fade-in fade-in-delay-1">
+                    <div class="feature-icon">&#128202;</div>
+                    <h3>Бізнес-аналітика</h3>
+                    <p>Інтерактивні дашборди, звіти та візуалізація даних. Відстежуйте KPI вашого бізнесу в реальному часі.</p>
+                </div>
+                <div class="feature-card fade-in fade-in-delay-2">
+                    <div class="feature-icon">&#9889;</div>
+                    <h3>Автоматизація</h3>
+                    <p>Створюйте автоматичні сценарії без програмування. Від тригерних розсилок до складних бізнес-процесів.</p>
+                </div>
+                <div class="feature-card fade-in fade-in-delay-3">
+                    <div class="feature-icon">&#128101;</div>
+                    <h3>CRM-система</h3>
+                    <p>Управління клієнтською базою, історія взаємодій, сегментація та персоналізація комунікацій.</p>
+                </div>
+                <div class="feature-card fade-in fade-in-delay-4">
+                    <div class="feature-icon">&#128640;</div>
+                    <h3>Управління проєктами</h3>
+                    <p>Kanban-дошки, діаграми Ганта, трекінг задач. Повна прозорість прогресу по кожному проєкту.</p>
+                </div>
+                <div class="feature-card fade-in fade-in-delay-5">
+                    <div class="feature-icon">&#128274;</div>
+                    <h3>Безпека даних</h3>
+                    <p>Шифрування на рівні банків, двофакторна аутентифікація, GDPR-сумісність та аудит-журнал дій.</p>
+                </div>
+                <div class="feature-card fade-in fade-in-delay-6">
+                    <div class="feature-icon">&#127760;</div>
+                    <h3>API та інтеграції</h3>
+                    <p>Відкритий API та 200+ готових інтеграцій з популярними сервісами: Slack, Telegram, 1C, SAP та іншими.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====== SLIDE 5: HOW IT WORKS ====== -->
+    <section class="slide slide-how" id="slide-4">
+        <div class="slide-content">
+            <div style="text-align: center; margin-bottom: 80px;">
+                <span class="section-label fade-in">Як це працює</span>
+                <h2 class="section-title fade-in fade-in-delay-1">Почати легко — за 4 кроки</h2>
+                <p class="section-desc fade-in fade-in-delay-2" style="margin: 0 auto;">
+                    Від реєстрації до повної автоматизації бізнесу — ми супроводжуємо вас на кожному етапі
+                </p>
+            </div>
+            <div class="steps-container">
+                <div class="step-card fade-in fade-in-delay-1">
+                    <div class="step-number">1</div>
+                    <h3>Реєстрація</h3>
+                    <p>Створіть акаунт за 2 хвилини та отримайте 14 днів безкоштовного повного доступу</p>
+                </div>
+                <div class="step-card fade-in fade-in-delay-2">
+                    <div class="step-number">2</div>
+                    <h3>Налаштування</h3>
+                    <p>Підключіть існуючі джерела даних та налаштуйте робочі процеси під свій бізнес</p>
+                </div>
+                <div class="step-card fade-in fade-in-delay-3">
+                    <div class="step-number">3</div>
+                    <h3>Автоматизація</h3>
+                    <p>Запустіть автоматичні сценарії для продажів, маркетингу та операційних процесів</p>
+                </div>
+                <div class="step-card fade-in fade-in-delay-4">
+                    <div class="step-number">4</div>
+                    <h3>Зростання</h3>
+                    <p>Аналізуйте результати, оптимізуйте процеси та масштабуйте свій бізнес</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====== SLIDE 6: RESULTS ====== -->
+    <section class="slide slide-results" id="slide-5">
+        <div class="slide-content">
+            <div style="text-align: center;">
+                <span class="section-label fade-in" style="color: var(--accent);">Результати клієнтів</span>
+                <h2 class="section-title fade-in fade-in-delay-1" style="color: var(--white);">
+                    Цифри говорять самі за себе
+                </h2>
+                <p class="section-desc fade-in fade-in-delay-2" style="color: var(--gray-light); margin: 0 auto;">
+                    Середні показники наших клієнтів після 6 місяців використання RNPI
+                </p>
+            </div>
+            <div class="results-grid">
+                <div class="result-card fade-in fade-in-delay-1">
+                    <div class="result-value">+47%</div>
+                    <div class="result-unit">зростання</div>
+                    <div class="result-desc">Збільшення обсягу продажів завдяки автоматизації воронки</div>
+                </div>
+                <div class="result-card fade-in fade-in-delay-2">
+                    <div class="result-value">-62%</div>
+                    <div class="result-unit">скорочення</div>
+                    <div class="result-desc">Зменшення часу на рутинні операції та звітність</div>
+                </div>
+                <div class="result-card fade-in fade-in-delay-3">
+                    <div class="result-value">3.2x</div>
+                    <div class="result-unit">ROI</div>
+                    <div class="result-desc">Середня окупність інвестицій протягом першого року</div>
+                </div>
+                <div class="result-card fade-in fade-in-delay-4">
+                    <div class="result-value">98%</div>
+                    <div class="result-unit">задоволення</div>
+                    <div class="result-desc">Рівень задоволеності клієнтів (CSAT score)</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====== SLIDE 7: PRICING ====== -->
+    <section class="slide slide-pricing" id="slide-6">
+        <div class="slide-content">
+            <div style="text-align: center; margin-bottom: 60px;">
+                <span class="section-label fade-in">Тарифні плани</span>
+                <h2 class="section-title fade-in fade-in-delay-1">Прозоре ціноутворення</h2>
+                <p class="section-desc fade-in fade-in-delay-2" style="margin: 0 auto;">
+                    Оберіть план, який найкраще відповідає потребам вашого бізнесу
+                </p>
+            </div>
+            <div class="pricing-grid">
+                <div class="pricing-card fade-in fade-in-delay-1">
+                    <div class="pricing-name">Starter</div>
+                    <div class="pricing-desc">Для малого бізнесу</div>
+                    <div class="pricing-price">$49<span>/міс</span></div>
+                    <div class="pricing-period">до 5 користувачів</div>
+                    <ul class="pricing-features">
+                        <li><span class="check">&#10003;</span> Базова аналітика</li>
+                        <li><span class="check">&#10003;</span> CRM до 1,000 контактів</li>
+                        <li><span class="check">&#10003;</span> 5 автоматизацій</li>
+                        <li><span class="check">&#10003;</span> Email-підтримка</li>
+                        <li><span class="check">&#10003;</span> 10 GB сховище</li>
+                    </ul>
+                    <a href="#" class="btn btn-outline btn-pricing" style="color: var(--dark); border-color: rgba(0,0,0,0.15);">Обрати план</a>
+                </div>
+                <div class="pricing-card featured fade-in fade-in-delay-2">
+                    <div class="pricing-badge">Найпопулярніший</div>
+                    <div class="pricing-name">Business</div>
+                    <div class="pricing-desc">Для зростаючих компаній</div>
+                    <div class="pricing-price">$149<span>/міс</span></div>
+                    <div class="pricing-period">до 25 користувачів</div>
+                    <ul class="pricing-features">
+                        <li><span class="check">&#10003;</span> Розширена аналітика + AI</li>
+                        <li><span class="check">&#10003;</span> CRM без обмежень</li>
+                        <li><span class="check">&#10003;</span> Необмежені автоматизації</li>
+                        <li><span class="check">&#10003;</span> Пріоритетна підтримка</li>
+                        <li><span class="check">&#10003;</span> 100 GB сховище</li>
+                        <li><span class="check">&#10003;</span> API доступ</li>
+                    </ul>
+                    <a href="#" class="btn btn-primary btn-pricing">Обрати план</a>
+                </div>
+                <div class="pricing-card fade-in fade-in-delay-3">
+                    <div class="pricing-name">Enterprise</div>
+                    <div class="pricing-desc">Для великих організацій</div>
+                    <div class="pricing-price">Custom</div>
+                    <div class="pricing-period">необмежено користувачів</div>
+                    <ul class="pricing-features">
+                        <li><span class="check">&#10003;</span> Все з Business +</li>
+                        <li><span class="check">&#10003;</span> Виділений сервер</li>
+                        <li><span class="check">&#10003;</span> SLA 99.99%</li>
+                        <li><span class="check">&#10003;</span> Персональний менеджер</li>
+                        <li><span class="check">&#10003;</span> Необмежене сховище</li>
+                        <li><span class="check">&#10003;</span> On-premise розгортання</li>
+                    </ul>
+                    <a href="#" class="btn btn-outline btn-pricing" style="color: var(--dark); border-color: rgba(0,0,0,0.15);">Зв'язатися</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====== SLIDE 8: TESTIMONIALS ====== -->
+    <section class="slide slide-testimonials" id="slide-7">
+        <div class="slide-content">
+            <div style="text-align: center; margin-bottom: 60px;">
+                <span class="section-label fade-in">Відгуки клієнтів</span>
+                <h2 class="section-title fade-in fade-in-delay-1">Що кажуть наші клієнти</h2>
+            </div>
+            <div class="testimonials-grid">
+                <div class="testimonial-card fade-in fade-in-delay-1">
+                    <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <p class="testimonial-text">
+                        "RNPI повністю змінив наш підхід до продажів. Автоматизація воронки та AI-аналітика дозволили нам збільшити конверсію на 52% за перший квартал."
+                    </p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">ОК</div>
+                        <div>
+                            <div class="testimonial-name">Олексій Коваленко</div>
+                            <div class="testimonial-role">CEO, TechRetail Group</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card fade-in fade-in-delay-2">
+                    <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <p class="testimonial-text">
+                        "Нарешті одна платформа замість десяти різних інструментів. Команда стала працювати набагато ефективніше, а я бачу повну картину бізнесу."
+                    </p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">МП</div>
+                        <div>
+                            <div class="testimonial-name">Марина Петренко</div>
+                            <div class="testimonial-role">COO, Digital Solutions UA</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card fade-in fade-in-delay-3">
+                    <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <p class="testimonial-text">
+                        "ROI за перші 6 місяців перевищив наші очікування в 3 рази. Найкраща інвестиція в інфраструктуру, яку ми зробили за останні роки."
+                    </p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">ДШ</div>
+                        <div>
+                            <div class="testimonial-name">Дмитро Шевченко</div>
+                            <div class="testimonial-role">CFO, Logistic Pro</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====== SLIDE 9: CTA ====== -->
+    <section class="slide slide-cta" id="slide-8">
+        <div class="slide-content">
+            <h2 class="cta-title fade-in">
+                Готові <span class="gradient-text" style="background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">трансформувати</span><br>ваш бізнес?
+            </h2>
+            <p class="cta-desc fade-in fade-in-delay-1">
+                Приєднуйтесь до 500+ компаній, які вже використовують RNPI для зростання. 14 днів безкоштовно, без зобов'язань.
+            </p>
+            <div class="cta-buttons fade-in fade-in-delay-2">
+                <a href="#" class="btn btn-primary" style="padding: 18px 48px; font-size: 18px;">
+                    Розпочати безкоштовний тріал
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+                <a href="#" class="btn btn-outline" style="padding: 18px 48px; font-size: 18px;">
+                    Запланувати демо
+                </a>
+            </div>
+            <div class="contact-row fade-in fade-in-delay-3">
+                <div class="contact-item">
+                    <div class="contact-icon">&#9993;</div>
+                    <span>sales@rnpi.io</span>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">&#9742;</div>
+                    <span>+380 (44) 123-45-67</span>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">&#127758;</div>
+                    <span>www.rnpi.io</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // ======= Intersection Observer for fade-in animations =======
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        });
+
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+        // ======= Navigation dots =======
+        const slides = document.querySelectorAll('.slide');
+        const dots = document.querySelectorAll('.nav-dot');
+
+        const slideObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const index = Array.from(slides).indexOf(entry.target);
+                    dots.forEach(d => d.classList.remove('active'));
+                    dots[index]?.classList.add('active');
+                }
+            });
+        }, {
+            threshold: 0.5
+        });
+
+        slides.forEach(slide => slideObserver.observe(slide));
+
+        dots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                const slideIndex = dot.getAttribute('data-slide');
+                slides[slideIndex].scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        // ======= Keyboard navigation =======
+        let currentSlide = 0;
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
+                e.preventDefault();
+                currentSlide = Math.min(currentSlide + 1, slides.length - 1);
+                slides[currentSlide].scrollIntoView({ behavior: 'smooth' });
+            } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+                e.preventDefault();
+                currentSlide = Math.max(currentSlide - 1, 0);
+                slides[currentSlide].scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+
+        // Update currentSlide on scroll
+        window.addEventListener('scroll', () => {
+            slides.forEach((slide, index) => {
+                const rect = slide.getBoundingClientRect();
+                if (rect.top >= -window.innerHeight / 2 && rect.top <= window.innerHeight / 2) {
+                    currentSlide = index;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
