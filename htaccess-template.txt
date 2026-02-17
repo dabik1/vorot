@@ -1,0 +1,47 @@
+# Camera Control System - Static File Delivery
+# Place this file in the camera-control/ directory on your web server
+# Prevents .py and .sh files from being executed as CGI scripts
+
+# Python files - deliver as binary downloads
+<FilesMatch "\.py$">
+    SetHandler None
+    ForceType application/octet-stream
+    Header set Content-Disposition attachment
+</FilesMatch>
+
+# Shell scripts - deliver as binary downloads
+<FilesMatch "\.sh$">
+    SetHandler None
+    ForceType application/x-sh
+    Header set Content-Disposition attachment
+</FilesMatch>
+
+# Text files - deliver as plain text
+<FilesMatch "\.txt$">
+    ForceType text/plain
+    Header set Content-Type "text/plain; charset=utf-8"
+</FilesMatch>
+
+# JSON files - proper content type
+<FilesMatch "\.json$">
+    ForceType application/json
+    Header set Content-Type "application/json; charset=utf-8"
+</FilesMatch>
+
+# Markdown files
+<FilesMatch "\.md$">
+    ForceType text/markdown
+    Header set Content-Type "text/markdown; charset=utf-8"
+</FilesMatch>
+
+# Allow access to all files
+<Files "*">
+    Require all granted
+</Files>
+
+# Disable directory listing
+Options -Indexes
+
+# CORS headers (optional - enable if needed)
+# Header set Access-Control-Allow-Origin "*"
+# Header set Access-Control-Allow-Methods "GET, OPTIONS"
