@@ -1,160 +1,133 @@
 #!/bin/bash
-# Camera Control System - Update Script
-# Usage: curl -sSL https://tehnodron.in.ua/camera-control/update.txt | bash
+# Vorot - Camera & Gate Control: оновлення з командного рядка
+#
+# Зазвичай оновлюються з веб-інтерфейсу (Налаштування -> Оновлення).
+# Цей скрипт - для пристроїв, де кнопка оновлення не працює
+# (версії 4.4.1-4.4.5: зламаний JavaScript сторінки) або немає доступу до інтерфейсу.
+#
+#   wget https://tehnodron.in.ua/camera-control/update.txt -O update.sh
+#   sudo bash update.sh
+#
+# Змінні середовища (необов'язкові):
+#   YES=1    не питати підтвердження
+#   FORCE=1  встановити навіть якщо версія на сервері не новіша
 
-set -e
+set -euo pipefail
 
-REPO_URL="https://tehnodron.in.ua/camera-control"
-INSTALL_DIR="/opt/camera-control"
-SERVICE_NAME="camera-control"
+REPO_URL="${UPDATE_REPO_URL:-https://tehnodron.in.ua/camera-control}"
+INSTALL_DIR="${INSTALL_DIR:-/opt/camera-control}"
+SERVICE_NAME="${SERVICE_NAME:-camera-control}"
+APP="camera_control.py"
 BACKUP_DIR="$INSTALL_DIR/backups"
+KEEP=5
 
-echo "=================================="
-echo "Camera Control System - Update"
-echo "=================================="
+die()  { echo "✗ $*" >&2; exit 1; }
+info() { echo "→ $*"; }
+ok()   { echo "✓ $*"; }
 
-# Check if running as root
-if [ "$EUID" -ne 0 ]; then 
-    echo "Please run as root (use sudo)"
-    exit 1
-fi
+[ "$(id -u)" -eq 0 ] || die "Запустіть від root: sudo bash update.sh"
+[ -f "$INSTALL_DIR/$APP" ] || die "Програму не знайдено: $INSTALL_DIR/$APP (спершу install.sh)"
 
-# Check if installed
-if [ ! -d "$INSTALL_DIR" ]; then
-    echo "Camera Control not installed!"
-    echo "Run install script first:"
-    echo "curl -sSL $REPO_URL/install.txt | bash"
-    exit 1
-fi
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
 
-cd $INSTALL_DIR
+CURRENT=$(grep -m1 '^CURRENT_VERSION' "$INSTALL_DIR/$APP" | cut -d'"' -f2)
+[ -n "$CURRENT" ] || CURRENT="0"
+info "Встановлена версія: $CURRENT"
 
-# Get current version
-CURRENT_VERSION="unknown"
-if [ -f "version.txt" ]; then
-    CURRENT_VERSION=$(cat version.txt)
-fi
+curl -fsSL "$REPO_URL/version.json" -o "$TMP/version.json" \
+    || die "Не вдалося завантажити $REPO_URL/version.json"
 
-echo "Current version: $CURRENT_VERSION"
+read -r URL SHA VERSION NEWER < <(python3 -I - "$TMP/version.json" "$CURRENT" <<'PY'
+import json, re, sys
+ver = lambda v: tuple(int(x) for x in re.findall(r"\d+", str(v))) or (0,)
+try:
+    d = json.load(open(sys.argv[1], encoding="utf-8"))
+    m = d.get("files", {}).get("main", {})
+    new = str(d.get("version", "-"))
+    print(m.get("url", "-"), str(m.get("sha256", "-")).lower(), new,
+          1 if ver(new) > ver(sys.argv[2]) else 0)
+except Exception as e:
+    print("version.json:", type(e).__name__, e, file=sys.stderr)
+    print("- - - 0")
+PY
+)
+[ -n "${VERSION:-}" ] && [ "$VERSION" != "-" ] || die "Некоректний version.json на сервері"
+info "Версія на сервері: $VERSION"
 
-# Download version info
-echo "Checking for updates..."
-if ! curl -sSL -o /tmp/version.json "$REPO_URL/version.json"; then
-    echo "ERROR: Cannot download version.json"
-    echo "Please check if files are uploaded to $REPO_URL"
-    exit 1
-fi
-
-NEW_VERSION=$(python3 -c "import json; print(json.load(open('/tmp/version.json'))['version'])" 2>/dev/null || echo "unknown")
-
-if [ "$NEW_VERSION" = "unknown" ]; then
-    echo "ERROR: Cannot parse version.json"
-    exit 1
-fi
-
-echo "Latest version: $NEW_VERSION"
-
-if [ "$CURRENT_VERSION" = "$NEW_VERSION" ]; then
-    echo "Already up to date!"
+if [ "$NEWER" != "1" ] && [ "${FORCE:-0}" != "1" ]; then
+    ok "Оновлення не потрібне"
     exit 0
 fi
 
-echo "Update available: $CURRENT_VERSION â†’ $NEW_VERSION"
-read -p "Continue? (y/n) " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    exit 0
+[[ "$URL" == https://* ]] || die "URL програми має бути https://, отримано: $URL"
+[[ "$SHA" =~ ^[0-9a-f]{64}$ ]] || die "У version.json немає коректного sha256 - оновлення відхилено"
+
+# Питаємо лише в інтерактивному терміналі (при curl | bash stdin - не термінал)
+if [ -t 0 ] && [ "${YES:-0}" != "1" ]; then
+    read -r -p "Оновити $CURRENT -> $VERSION? [y/N] " ans
+    [[ "$ans" =~ ^[Yy]$ ]] || exit 0
 fi
 
-# Create backup
-echo "Creating backup..."
-mkdir -p $BACKUP_DIR
-BACKUP_FILE="$BACKUP_DIR/backup-$(date +%Y%m%d-%H%M%S).tar.gz"
-tar -czf $BACKUP_FILE camera_control.py cameras.db 2>/dev/null || true
-echo "Backup saved: $BACKUP_FILE"
+# ---------- завантаження і перевірки ----------
+info "Завантаження..."
+curl -fsSL "$URL" -o "$TMP/$APP" || die "Не вдалося завантажити $URL"
+echo "$SHA  $TMP/$APP" | sha256sum -c --quiet - || die "SHA-256 не збігається - файл пошкоджений або підмінений"
+ok "SHA-256 перевірено"
 
-# Stop service
-echo "Stopping service..."
-systemctl stop $SERVICE_NAME || true
+[ "$(head -c 2 "$TMP/$APP")" = "#!" ] || die "Завантажений файл не є Python-скриптом"
+FILE_VERSION=$(grep -m1 '^CURRENT_VERSION' "$TMP/$APP" | cut -d'"' -f2)
+[ "$FILE_VERSION" = "$VERSION" ] || die "Версія у файлі ($FILE_VERSION) не збігається з version.json ($VERSION)"
+python3 -m py_compile "$TMP/$APP" || die "Синтаксична помилка в новій версії"
 
-# Download new version (using .txt to avoid CGI execution)
-echo "Downloading update..."
-echo "URL: $REPO_URL/camera-control.txt"
+# Пробний запуск без старту сервера: відсутні модулі, помилки при імпорті
+info "Пробний запуск нової версії..."
+( cd "$INSTALL_DIR" && CAMERA_CONTROL_PREFLIGHT=1 timeout 120 python3 -c \
+    "import runpy, sys; runpy.run_path(sys.argv[1], run_name='__preflight__')" "$TMP/$APP" ) \
+    > "$TMP/preflight.log" 2>&1 \
+    || die "Нова версія не запускається: $(grep -v '^\s*$' "$TMP/preflight.log" | tail -1)"
+ok "Пробний запуск пройдено"
 
-HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$REPO_URL/camera-control.txt")
-if [ "$HTTP_CODE" != "200" ]; then
-    echo "ERROR: Cannot download file (HTTP $HTTP_CODE)"
-    systemctl start $SERVICE_NAME
-    exit 1
+# ---------- резервні копії ----------
+# Назва як у програми - кнопка "Відкотити" в інтерфейсі побачить цю копію
+STAMP=$(date +%Y%m%d-%H%M%S)
+mkdir -p "$BACKUP_DIR"
+BACKUP="$BACKUP_DIR/camera_control-$CURRENT-$STAMP.py"
+cp -p "$INSTALL_DIR/$APP" "$BACKUP"
+if [ -f "$INSTALL_DIR/cameras.db" ]; then
+    python3 -I - "$INSTALL_DIR/cameras.db" "$BACKUP_DIR/cameras-$STAMP.db" <<'PY'
+import sqlite3, sys
+src = sqlite3.connect(sys.argv[1]); dst = sqlite3.connect(sys.argv[2])
+src.backup(dst); dst.close(); src.close()
+PY
+    chmod 600 "$BACKUP_DIR/cameras-$STAMP.db"
+fi
+ok "Резервна копія: $BACKUP"
+
+# ---------- заміна і перезапуск ----------
+install -m 755 "$TMP/$APP" "$INSTALL_DIR/$APP.new"
+mv -f "$INSTALL_DIR/$APP.new" "$INSTALL_DIR/$APP"
+rm -f "$INSTALL_DIR/version.txt"          # застарілий файл версій до 4.4.5
+
+info "Перезапуск сервісу $SERVICE_NAME..."
+systemctl restart "$SERVICE_NAME"
+sleep 5
+if ! systemctl is-active --quiet "$SERVICE_NAME"; then
+    echo "✗ Сервіс не запустився - повертаю версію $CURRENT" >&2
+    cp -p "$BACKUP" "$INSTALL_DIR/$APP"
+    systemctl restart "$SERVICE_NAME" || true
+    die "Оновлення скасовано. Журнал: journalctl -u $SERVICE_NAME -n 50"
 fi
 
-curl -sSL -o camera_control.py.new "$REPO_URL/camera-control.txt"
+# Лишаємо останні $KEEP копій програми і бази
+ls -1t "$BACKUP_DIR"/camera_control-*.py 2>/dev/null | tail -n +$((KEEP + 1)) | xargs -r rm -f || true
+ls -1t "$BACKUP_DIR"/cameras-*.db 2>/dev/null | tail -n +$((KEEP + 1)) | xargs -r rm -f || true
 
-# Verify download
-if [ ! -s camera_control.py.new ]; then
-    echo "Download failed!"
-    systemctl start $SERVICE_NAME
-    exit 1
-fi
-
-# Check if it's actually Python code
-if ! head -1 camera_control.py.new | grep -q "python"; then
-    echo "Downloaded file is not a Python script!"
-    echo "First line: $(head -1 camera_control.py.new)"
-    rm camera_control.py.new
-    systemctl start $SERVICE_NAME
-    exit 1
-fi
-
-echo "âœ“ Downloaded $(stat -f%z camera_control.py.new 2>/dev/null || stat -c%s camera_control.py.new) bytes"
-
-# Check syntax
-echo "Checking Python syntax..."
-if ! python3 -m py_compile camera_control.py.new 2>/dev/null; then
-    echo "Syntax check failed!"
-    rm camera_control.py.new
-    systemctl start $SERVICE_NAME
-    exit 1
-fi
-echo "âœ“ Syntax OK"
-
-# Replace file
-echo "Installing update..."
-mv camera_control.py.new camera_control.py
-chmod +x camera_control.py
-
-# Save version
-echo "$NEW_VERSION" > version.txt
-
-# Start service
-echo "Starting service..."
-systemctl start $SERVICE_NAME
-
-# Wait for service to start
-sleep 2
-
-# Check if service is running
-if systemctl is-active --quiet $SERVICE_NAME; then
-    echo "=================================="
-    echo "âœ“ Update completed successfully!"
-    echo "=================================="
-    echo "Version: $NEW_VERSION"
-    echo "Service: $SERVICE_NAME"
-    echo "Status: systemctl status $SERVICE_NAME"
-    echo ""
-    echo "Changelog:"
-    python3 -c "import json; changes=json.load(open('/tmp/version.json'))['changelog']; print('\n'.join(['  - '+c for c in changes]))" 2>/dev/null || echo "  (no changelog)"
-    echo "=================================="
-else
-    echo "=================================="
-    echo "âœ— Service failed to start!"
-    echo "=================================="
-    echo "Restoring backup..."
-    tar -xzf $BACKUP_FILE
-    systemctl start $SERVICE_NAME
-    echo "Rollback completed"
-    exit 1
-fi
-
-# Cleanup old backups (keep last 5)
-ls -t $BACKUP_DIR/backup-*.tar.gz 2>/dev/null | tail -n +6 | xargs rm -f 2>/dev/null || true
+echo "=================================="
+ok "Оновлено: $CURRENT -> $VERSION"
+echo "=================================="
+python3 -I - "$TMP/version.json" <<'PY' || true
+import json, sys
+for c in json.load(open(sys.argv[1], encoding="utf-8")).get("changelog", []):
+    print("  -", c)
+PY

@@ -4,12 +4,21 @@
 
 Завантажте ці файли в папку `camera-control/` на tehnodron.in.ua:
 
+### Підготовка релізу
+
+```bash
+python3 make_version.py camera_control.py "що змінилось"
+```
+
+Скрипт перевірить JavaScript сторінки й створить `version.json` і `camera_control.txt`
+з контрольною сумою SHA-256. Без правильної суми пристрої оновлення не приймуть.
+
 ### Файли які потрібні обов'язково:
 
-1. **camera-control.py** → перейменувати в **camera-control.txt**
+1. **camera_control.txt** (створює make_version.py)
 2. **install.sh** → перейменувати в **install.txt**
 3. **update.sh** → перейменувати в **update.txt**
-4. **version.json** → залишити як є
+4. **version.json** (створює make_version.py)
 5. **Створити .htaccess** (див. нижче)
 
 ### Файли документації (необов'язкові):
@@ -59,7 +68,7 @@ Options -Indexes
 https://tehnodron.in.ua/camera-control/version.json
 ```
 
-Має показати JSON з версією 4.4.1
+Має показати JSON з поточною версією і полем `sha256`
 
 ---
 
@@ -83,10 +92,8 @@ curl -I https://tehnodron.in.ua/camera-control/version.json
 
 # Має показати: HTTP/2 200
 
-# Оновити поточну систему
-cd ~/gate-control
-curl -o camera_control.py https://tehnodron.in.ua/camera-control/camera-control.txt
-sudo systemctl restart <ваш-сервіс>
+# Оновити поточну систему (з перевіркою SHA-256 і відкатом)
+wget https://tehnodron.in.ua/camera-control/update.txt -O update.sh && sudo bash update.sh
 ```
 
 ---
@@ -96,7 +103,7 @@ sudo systemctl restart <ваш-сервіс>
 ```
 tehnodron.in.ua/www/camera-control/
 ├── .htaccess                  ← створити
-├── camera-control.txt         ← перейменований .py
+├── camera_control.txt         ← перейменований .py
 ├── install.txt                ← перейменований .sh
 ├── update.txt                 ← перейменований .sh
 ├── version.json               ← без змін
@@ -110,7 +117,7 @@ tehnodron.in.ua/www/camera-control/
 Після розгортання на сервері, на будь-якій новій RNPi просто виконайте:
 
 ```bash
-curl -sSL https://tehnodron.in.ua/camera-control/install.txt | sudo bash
+wget https://tehnodron.in.ua/camera-control/install.txt -O install.sh && sudo bash install.sh
 ```
 
 Готово! 🎉
