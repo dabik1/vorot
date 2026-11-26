@@ -1,132 +1,151 @@
 #!/bin/bash
-# Camera Control System - Installation Script
-# Usage: curl -sSL https://tehnodron.in.ua/camera-control/install.txt | bash
+# Vorot - Camera & Gate Control: встановлення
+#
+# Рекомендовано: спершу завантажити й переглянути, потім запустити
+#   wget https://tehnodron.in.ua/camera-control/install.txt -O install.sh
+#   sudo bash install.sh
+#
+# На платах з малою пам'яттю (NanoPi NEO, 256 МБ) запускайте у фоні,
+# щоб обрив SSH не перервав установку пакетів:
+#   sudo systemd-run --unit=vorot-install bash "$PWD/install.sh"
+#   journalctl -u vorot-install -f
+#
+# Змінні середовища (необов'язкові):
+#   LISTEN_PORT=5000   порт веб-інтерфейсу (за замовчуванням 8080)
+#   FORCE=1            перевстановити поверх наявної програми (БД зберігається)
 
-set -e
+set -euo pipefail
 
-REPO_URL="https://tehnodron.in.ua/camera-control"
-INSTALL_DIR="/opt/camera-control"
-SERVICE_NAME="camera-control"
+REPO_URL="${UPDATE_REPO_URL:-https://tehnodron.in.ua/camera-control}"
+INSTALL_DIR="${INSTALL_DIR:-/opt/camera-control}"
+SERVICE_NAME="${SERVICE_NAME:-camera-control}"
+SYSTEMD_DIR="${SYSTEMD_DIR:-/etc/systemd/system}"
+EARLYOOM_CONF="${EARLYOOM_CONF:-/etc/default/earlyoom}"
+LISTEN_PORT="${LISTEN_PORT:-8080}"
+APP="camera_control.py"
 
-echo "=================================="
-echo "Camera Control System - Install"
-echo "=================================="
+die()  { echo "✗ $*" >&2; exit 1; }
+info() { echo "→ $*"; }
+ok()   { echo "✓ $*"; }
+warn() { echo "⚠ $*" >&2; }
 
-# Check if running as root
-if [ "$EUID" -ne 0 ]; then 
-    echo "Please run as root (use sudo)"
-    exit 1
-fi
+[ "$(id -u)" -eq 0 ] || die "Запустіть від root: sudo bash install.sh"
+[[ "$LISTEN_PORT" =~ ^[0-9]+$ ]] || die "LISTEN_PORT має бути числом"
 
-# Detect system
 if [ -f /etc/os-release ]; then
     . /etc/os-release
-    OS=$ID
-else
-    echo "Cannot detect OS"
-    exit 1
+    case " ${ID:-} ${ID_LIKE:-} " in
+        *" debian "*|*" ubuntu "*) ;;
+        *) die "Підтримуються Debian / Ubuntu / Armbian, виявлено: ${ID:-?}" ;;
+    esac
 fi
 
-echo "OS detected: $OS"
-
-# Install dependencies
-echo "Installing dependencies..."
-if [ "$OS" = "debian" ] || [ "$OS" = "ubuntu" ] || [ "$OS" = "armbian" ]; then
-    apt-get update
-    apt-get install -y python3 python3-pip ffmpeg sqlite3 curl
-    pip3 install flask --break-system-packages
-    
-    # Try to install GPIO (may fail on non-ARM)
-    pip3 install OPi.GPIO --break-system-packages 2>/dev/null || echo "GPIO not installed (not ARM?)"
-else
-    echo "Unsupported OS: $OS"
-    exit 1
+if [ -f "$INSTALL_DIR/$APP" ] && [ "${FORCE:-0}" != "1" ]; then
+    die "Програма вже встановлена в $INSTALL_DIR. Для оновлення: update.sh (або FORCE=1 для перевстановлення)"
 fi
 
-# Create installation directory
-echo "Creating directory: $INSTALL_DIR"
-mkdir -p $INSTALL_DIR
-cd $INSTALL_DIR
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
 
-# Download files (using .txt extension to avoid CGI execution)
-echo "Downloading Camera Control..."
-echo "URL: $REPO_URL/camera-control.txt"
+echo "=================================="
+echo " Vorot - встановлення"
+echo "=================================="
 
-# Check if file is accessible
-HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$REPO_URL/camera-control.txt")
-if [ "$HTTP_CODE" != "200" ]; then
-    echo "ERROR: Cannot download file (HTTP $HTTP_CODE)"
-    echo "Please check if files are uploaded to $REPO_URL"
-    exit 1
+# ---------- пам'ять ----------
+MEM_MB=$(awk '/MemTotal/ {print int($2/1024)}' /proc/meminfo)
+SWAP_MB=$(awk '/SwapTotal/ {print int($2/1024)}' /proc/meminfo)
+info "Пам'ять: ${MEM_MB} МБ, своп: ${SWAP_MB} МБ"
+if [ "$MEM_MB" -lt 512 ] && [ "$SWAP_MB" -lt 256 ]; then
+    warn "Мало пам'яті і майже немає свопу - установка ffmpeg може підвісити плату."
+    warn "Увімкніть zram (на Armbian є за замовчуванням) і запустіть знову."
+    [ "${FORCE_LOWMEM:-0}" = "1" ] || die "Перервано. Щоб продовжити попри це: FORCE_LOWMEM=1"
 fi
 
-curl -sSL -o camera_control.py "$REPO_URL/camera-control.txt"
-chmod +x camera_control.py
+# ---------- пакети ----------
+export DEBIAN_FRONTEND=noninteractive
+info "Встановлення пакетів (без необов'язкових залежностей)..."
+apt-get update
+apt-get install -y --no-install-recommends python3 python3-flask python3-pip ca-certificates curl earlyoom
 
-# Verify downloaded file
-if ! head -1 camera_control.py | grep -q "python"; then
-    echo "ERROR: Downloaded file is not a Python script"
-    echo "First line: $(head -1 camera_control.py)"
-    exit 1
-fi
+pip3 install OPi.GPIO --break-system-packages \
+    || warn "OPi.GPIO не встановлено - кнопки GPIO не працюватимуть (це не Orange/NanoPi?)"
 
-echo "âœ“ Downloaded $(stat -f%z camera_control.py 2>/dev/null || stat -c%s camera_control.py) bytes"
+# earlyoom: при нестачі пам'яті першими вбиває ffmpeg і apt, програму береже
+echo 'EARLYOOM_ARGS="-m 5 -s 10 -r 3600 --prefer ^(ffmpeg|apt|apt-get|dpkg)$ --avoid ^python3$"' > "$EARLYOOM_CONF"
+systemctl restart earlyoom || warn "earlyoom не запустився"
 
-# Check Python syntax
-echo "Checking Python syntax..."
-if ! python3 -m py_compile camera_control.py 2>/dev/null; then
-    echo "ERROR: Python syntax check failed"
-    exit 1
-fi
-echo "âœ“ Syntax OK"
+info "Встановлення ffmpeg (найважчий пакет, може тривати 10-30 хв на слабкій платі)..."
+apt-get install -y --no-install-recommends ffmpeg \
+    || warn "ffmpeg не встановлено - відео з камер не працюватиме, кнопки працюють"
 
-# Create systemd service
-echo "Creating systemd service..."
-cat > /etc/systemd/system/$SERVICE_NAME.service <<EOF
+# ---------- програма ----------
+info "Перевірка опублікованої версії..."
+curl -fsSL "$REPO_URL/version.json" -o "$TMP/version.json" \
+    || die "Не вдалося завантажити $REPO_URL/version.json"
+
+read -r URL SHA VERSION < <(python3 -I - "$TMP/version.json" <<'PY'
+import json, sys
+try:
+    d = json.load(open(sys.argv[1], encoding="utf-8"))
+    m = d.get("files", {}).get("main", {})
+    print(m.get("url", "-"), str(m.get("sha256", "-")).lower(), d.get("version", "-"))
+except Exception as e:
+    print("version.json:", type(e).__name__, e, file=sys.stderr)
+    print("- - -")
+PY
+)
+[ -n "${VERSION:-}" ] && [ "$VERSION" != "-" ] || die "Некоректний version.json на сервері"
+[[ "$URL" == https://* ]] || die "URL програми має бути https://, отримано: $URL"
+[[ "$SHA" =~ ^[0-9a-f]{64}$ ]] || die "У version.json немає коректного sha256"
+
+info "Завантаження версії $VERSION..."
+curl -fsSL "$URL" -o "$TMP/$APP" || die "Не вдалося завантажити $URL"
+echo "$SHA  $TMP/$APP" | sha256sum -c --quiet - || die "SHA-256 не збігається - файл пошкоджений або підмінений"
+ok "SHA-256 перевірено"
+
+[ "$(head -c 2 "$TMP/$APP")" = "#!" ] || die "Завантажений файл не є Python-скриптом"
+FILE_VERSION=$(grep -m1 '^CURRENT_VERSION' "$TMP/$APP" | cut -d'"' -f2)
+[ "$FILE_VERSION" = "$VERSION" ] || die "Версія у файлі ($FILE_VERSION) не збігається з version.json ($VERSION)"
+python3 -m py_compile "$TMP/$APP" || die "Синтаксична помилка в програмі"
+
+mkdir -p "$INSTALL_DIR"
+install -m 755 "$TMP/$APP" "$INSTALL_DIR/$APP.new"
+mv -f "$INSTALL_DIR/$APP.new" "$INSTALL_DIR/$APP"
+ok "Програма: $INSTALL_DIR/$APP"
+
+# ---------- сервіс ----------
+cat > "$SYSTEMD_DIR/$SERVICE_NAME.service" <<EOF
 [Unit]
-Description=Camera Control System
-After=network.target
+Description=Vorot - Camera & Gate Control
+After=network-online.target
+Wants=network-online.target
 
 [Service]
-Type=simple
-User=root
 WorkingDirectory=$INSTALL_DIR
-ExecStart=/usr/bin/python3 $INSTALL_DIR/camera_control.py
+ExecStart=/usr/bin/python3 $INSTALL_DIR/$APP
+Environment=LISTEN_PORT=$LISTEN_PORT
+OOMScoreAdjust=-500
 Restart=always
-RestartSec=10
+RestartSec=3
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-# Enable and start service
 systemctl daemon-reload
-systemctl enable $SERVICE_NAME
-systemctl start $SERVICE_NAME
+systemctl enable "$SERVICE_NAME"
+systemctl restart "$SERVICE_NAME"
+sleep 3
+systemctl is-active --quiet "$SERVICE_NAME" \
+    || die "Сервіс не запустився. Журнал: journalctl -u $SERVICE_NAME -n 50"
 
-# Wait a bit and check status
-sleep 2
-if systemctl is-active --quiet $SERVICE_NAME; then
-    echo "âœ“ Service started successfully"
-else
-    echo "âš  Service may have failed to start"
-    echo "Check logs: journalctl -u $SERVICE_NAME -n 50"
-fi
-
-# Get IP address
-IP=$(hostname -I | awk '{print $1}')
-
+IP=$(hostname -I 2>/dev/null | awk '{print $1}')
 echo "=================================="
-echo "âœ“ Installation completed!"
+ok "Встановлено версію $VERSION"
 echo "=================================="
-echo "Service: $SERVICE_NAME"
-echo "Status: systemctl status $SERVICE_NAME"
-echo "Logs: journalctl -u $SERVICE_NAME -f"
-echo ""
-echo "Web interface: http://$IP:8080"
-echo "Default login: admin / admin"
-echo "=================================="
-echo ""
-echo "Update command:"
-echo "curl -sSL $REPO_URL/update.txt | bash"
+echo " Веб-інтерфейс: http://${IP:-<ip>}:$LISTEN_PORT"
+echo " Перший вхід:   admin / admin  (одразу попросить змінити пароль)"
+echo " Журнал:        journalctl -u $SERVICE_NAME -f"
+echo
+echo " Не відкривайте порт $LISTEN_PORT в інтернет без VPN."
 echo "=================================="

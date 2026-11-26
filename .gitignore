@@ -40,3 +40,9 @@ Thumbs.db
 *.new
 *.tmp
 *.log
+
+# Ключ підпису сесій - унікальний для кожного пристрою
+secret.key
+
+# Публікаційна копія для хостингу (генерує make_version.py)
+camera_control.txt

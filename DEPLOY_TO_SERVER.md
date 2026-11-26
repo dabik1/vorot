@@ -7,7 +7,7 @@
 ```
 camera-control/
 ├── .htaccess              (обов'язково!)
-├── camera-control.txt     (85KB) - основна програма
+├── camera_control.txt     (~140KB) - основна програма
 ├── version.json           (812B) - інформація про версію
 ├── install.txt            (2.4KB) - скрипт встановлення
 └── update.txt             (3.3KB) - скрипт оновлення
@@ -60,12 +60,19 @@ Options -Indexes
 
 ---
 
-## 📂 Крок 2: Перейменуйте файли
+## 📂 Крок 2: Підготуйте файли
 
+`camera_control.txt` і `version.json` створює скрипт — вручну їх не перейменовувати
+й не редагувати, інакше не збіжеться SHA-256 і пристрої відхилять оновлення:
+
+```bash
+python3 make_version.py camera_control.py "що змінилось"
+```
+
+Скрипти встановлення й оновлення — перейменувати вручну.
 **ВАЖЛИВО:** На сервері файли мають мати розширення `.txt`!
 
 ```
-camera-control.py  →  camera-control.txt
 install.sh         →  install.txt
 update.sh          →  update.txt
 ```
@@ -81,7 +88,7 @@ update.sh          →  update.txt
 ```
 /home/jg441090/tehnodron.in.ua/www/camera-control/
 ├── .htaccess
-├── camera-control.txt
+├── camera_control.txt
 ├── install.txt
 ├── update.txt
 └── version.json
@@ -95,7 +102,7 @@ update.sh          →  update.txt
 
 Відкрийте ці URL:
 - https://tehnodron.in.ua/camera-control/version.json
-- https://tehnodron.in.ua/camera-control/camera-control.txt
+- https://tehnodron.in.ua/camera-control/camera_control.txt
 - https://tehnodron.in.ua/camera-control/install.txt
 
 **Має показати вміст файлів, НЕ помилку 500!**
@@ -105,15 +112,15 @@ update.sh          →  update.txt
 ```bash
 # Перевірити HTTP статус (має бути 200)
 curl -I https://tehnodron.in.ua/camera-control/version.json
-curl -I https://tehnodron.in.ua/camera-control/camera-control.txt
+curl -I https://tehnodron.in.ua/camera-control/camera_control.txt
 
 # Завантажити version.json
 curl https://tehnodron.in.ua/camera-control/version.json
 
-# Перевірити розмір camera-control.txt
-curl -sI https://tehnodron.in.ua/camera-control/camera-control.txt | grep -i content-length
+# Перевірити розмір camera_control.txt
+curl -sI https://tehnodron.in.ua/camera-control/camera_control.txt | grep -i content-length
 
-# Має показати: Content-Length: 85000 (приблизно)
+# Має показати: Content-Length: ~140000
 ```
 
 ---
@@ -124,7 +131,7 @@ curl -sI https://tehnodron.in.ua/camera-control/camera-control.txt | grep -i con
 
 ```bash
 # Спробувати встановити
-curl -sSL https://tehnodron.in.ua/camera-control/install.txt | sudo bash
+wget https://tehnodron.in.ua/camera-control/install.txt -O install.sh && sudo bash install.sh
 
 # Має виконатись без помилок і показати:
 # ✓ Installation completed!
@@ -197,7 +204,7 @@ ls -la
 ## 📊 Очікувані розміри файлів:
 
 ```
-camera-control.txt    ~85 KB   (основна програма v4.4.1)
+camera_control.txt    ~140 KB  (основна програма)
 version.json          ~800 B   (метадані)
 install.txt           ~2.4 KB  (скрипт встановлення)
 update.txt            ~3.3 KB  (скрипт оновлення)
@@ -213,7 +220,7 @@ update.txt            ~3.3 KB  (скрипт оновлення)
 - [ ] .htaccess створений
 - [ ] Права доступу 644
 - [ ] version.json відкривається в браузері
-- [ ] camera-control.txt завантажується (не 500 помилка)
+- [ ] camera_control.txt завантажується (не 500 помилка)
 - [ ] Кеш Cloudflare очищений
 - [ ] Тестове встановлення на RNPi пройшло успішно
 
@@ -225,12 +232,12 @@ update.txt            ~3.3 KB  (скрипт оновлення)
 
 **Встановлення на новій RNPi:**
 ```bash
-curl -sSL https://tehnodron.in.ua/camera-control/install.txt | sudo bash
+wget https://tehnodron.in.ua/camera-control/install.txt -O install.sh && sudo bash install.sh
 ```
 
 **Оновлення існуючої системи:**
 ```bash
-curl -sSL https://tehnodron.in.ua/camera-control/update.txt | sudo bash
+wget https://tehnodron.in.ua/camera-control/update.txt -O update.sh && sudo bash update.sh
 ```
 
 **Або через веб-інтерфейс:**
@@ -238,5 +245,5 @@ curl -sSL https://tehnodron.in.ua/camera-control/update.txt | sudo bash
 
 ---
 
-**Camera Control System v4.4.1**  
+**Vorot / Camera Control System**  
 *Готовий до розгортання!* 🚀

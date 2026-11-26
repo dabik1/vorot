@@ -1,26 +1,14 @@
 {
-  "version": "4.4.1",
-  "date": "2025-01-17",
-  "build": "20250117003",
-  "min_python": "3.7",
+  "version": "4.4.9",
+  "date": "2026-11-21",
   "changelog": [
-    "Fixed HTTP 500 error during update check",
-    "Added diagnostic tool for troubleshooting updates",
-    "Better error messages and handling",
-    "Added manual update instructions in UI",
-    "Support for custom UPDATE_REPO_URL environment variable"
+    "Реле: усі налаштовані GPIO-піни виставляються у 'вимкнено' одразу при старті, а не при першому натисканні",
+    "Реле: нова або змінена кнопка - її пін одразу у 'вимкнено'"
   ],
   "files": {
     "main": {
-      "url": "https://tehnodron.in.ua/camera-control/camera-control.txt",
-      "size": 85000,
-      "checksum": "sha256"
+      "url": "https://tehnodron.in.ua/camera-control/camera_control.txt",
+      "sha256": "6368608c3442fdc3782ce9d42dbd9764033484b8ca967ef7d022ca137cccf035"
     }
-  },
-  "dependencies": {
-    "system": ["ffmpeg", "sqlite3"],
-    "python": ["flask", "OPi.GPIO"]
-  },
-  "install_command": "curl -sSL https://tehnodron.in.ua/camera-control/install.txt | bash",
-  "update_command": "curl -sSL https://tehnodron.in.ua/camera-control/update.txt | bash"
+  }
 }
